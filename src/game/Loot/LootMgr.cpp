@@ -876,7 +876,7 @@ void Loot::AddItem(uint32 itemid, uint32 count, uint32 randomSuffix, int32 rando
 }
 
 // Calls processor of corresponding LootTemplate (which handles everything including references)
-bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError)
+bool Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* lootOwner, bool /*personal*/, bool noEmptyError)
 {
     // Must be provided
     if (!lootOwner)
@@ -1262,6 +1262,7 @@ void Loot::Release(Player* player)
         }
         case HIGHGUID_ITEM:
         {
+            ForceLootAnimationClientUpdate();
             switch (m_lootType)
             {
                 // temporary loot in stacking items, clear loot state, no auto loot move
@@ -1276,7 +1277,6 @@ void Loot::Release(Player* player)
                     // reset loot for allow repeat looting if stack > 5
                     Clear();
                     m_itemTarget->SetLootState(ITEM_LOOT_REMOVED);
-
                     player->DestroyItemCount(m_itemTarget, count, true);
                     break;
                 }
@@ -1302,7 +1302,9 @@ void Loot::Release(Player* player)
                     break;
                 }
             }
-            return;                                         // item can be looted only single player
+            //already done above
+            updateClients = false;
+            break;
         }
         case HIGHGUID_UNIT:
         {
@@ -1375,7 +1377,7 @@ void Loot::Release(Player* player)
     }
 
     if (updateClients)
-        ForceLootAnimationCLientUpdate();
+        ForceLootAnimationClientUpdate();
 }
 
 // Popup windows with loot content
@@ -1633,7 +1635,7 @@ Loot::Loot(Player* player, Creature* creature, LootType type) :
                     creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 else
                     creature->SetLootStatus(CREATURE_LOOT_STATUS_LOOTED);
-                ForceLootAnimationCLientUpdate();
+                ForceLootAnimationClientUpdate();
                 break;
             }
 
@@ -2021,7 +2023,7 @@ InventoryResult Loot::SendItem(Player* target, LootItem* lootItem)
         }
         else if (IsLootedFor(target))
             SendReleaseFor(target);
-        ForceLootAnimationCLientUpdate();
+        ForceLootAnimationClientUpdate();
     }
     return msg;
 }
@@ -2077,7 +2079,7 @@ void Loot::Update()
 
 // this will force server to update all client that is showing this object
 // used to update players right to loot or sparkles animation
-void Loot::ForceLootAnimationCLientUpdate() const
+void Loot::ForceLootAnimationClientUpdate() const
 {
     if (!m_lootTarget)
         return;
@@ -2187,9 +2189,15 @@ void Loot::SendGold(Player* player)
     }
     m_gold = 0;
 
+    // animation update is done in Release if needed.
     if (IsLootedFor(player))
+    {
         Release(player);
-    ForceLootAnimationCLientUpdate();
+        // Be aware that in case of items that contain loot this class may be freed.
+        // All pointers may be invalid due to Player::DestroyItem call.
+    }
+    else
+        ForceLootAnimationClientUpdate();
 }
 
 bool Loot::IsItemAlreadyIn(uint32 itemId) const
@@ -2586,14 +2594,15 @@ bool LootTemplate::HasQuestDropForPlayer(LootTemplateMap const& store, Player co
 
 bool LootTemplate::PlayerOrGroupFulfilsCondition(const Loot& loot, Player const* lootOwner, uint16 conditionId)
 {
+    Map* map = lootOwner->IsInWorld() ? lootOwner->GetMap() : loot.GetLootTarget()->GetMap(); // if neither succeeds, we have a design problem
     auto& ownerSet = loot.GetOwnerSet();
     // optimization - no need to look up when player is solo
     if (ownerSet.size() <= 1)
-        return sObjectMgr.IsPlayerMeetToCondition(conditionId, lootOwner, lootOwner->GetMap(), loot.GetLootTarget(), CONDITION_FROM_REFERING_LOOT);
+        return sObjectMgr.IsPlayerMeetToCondition(conditionId, lootOwner, map, loot.GetLootTarget(), CONDITION_FROM_REFERING_LOOT);
 
     for (const ObjectGuid& guid : ownerSet)
-        if (Player* player = lootOwner->GetMap()->GetPlayer(guid))
-            if (sObjectMgr.IsPlayerMeetToCondition(conditionId, player, player->GetMap(), loot.GetLootTarget(), CONDITION_FROM_REFERING_LOOT))
+        if (Player* player = map->GetPlayer(guid))
+            if (sObjectMgr.IsPlayerMeetToCondition(conditionId, player, map, loot.GetLootTarget(), CONDITION_FROM_REFERING_LOOT))
                 return true;
 
     return false;

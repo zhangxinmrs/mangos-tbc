@@ -87,14 +87,13 @@ class PlayerbotChatHandler : protected ChatHandler
 };
 
 PlayerbotAI::PlayerbotAI(PlayerbotMgr* const mgr, Player* const bot) :
-    m_mgr(mgr), m_bot(bot), m_classAI(0), m_ignoreAIUpdatesUntilTime(CurrentTime()),
+    m_AutoEquipToggle(false), m_mgr(mgr), m_bot(bot), m_classAI(0), m_ignoreAIUpdatesUntilTime(CurrentTime()),
     m_combatOrder(ORDERS_NONE), m_ScenarioType(SCENARIO_PVE),
     m_CurrentlyCastingSpellId(0), m_CraftSpellId(0), m_spellIdCommand(0),
     m_targetGuidCommand(ObjectGuid()),
     m_taxiMaster(ObjectGuid()),
-    m_AutoEquipToggle(false),
-    m_bDebugCommandChat(false),
-    m_ignoreNeutralizeEffect(false)
+    m_ignoreNeutralizeEffect(false),
+    m_bDebugCommandChat(false)
 {
     // set bot state
     m_botState = BOTSTATE_LOADING;
@@ -2315,7 +2314,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             if (pSpellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
                 return;
 
-            uint32 CastingTime = !IsChanneledSpell(pSpellInfo) ? GetSpellCastTime(pSpellInfo) : GetSpellDuration(pSpellInfo);
+            uint32 CastingTime = !IsChanneledSpell(pSpellInfo) ? GetSpellCastTime(pSpellInfo, m_bot) : GetSpellDuration(pSpellInfo);
 
             SetIgnoreUpdateTime((msTime / 1000) + 1);
 
@@ -4063,7 +4062,7 @@ void PlayerbotAI::DoLoot()
             // use key on object if available
             if (reqItem > 0 && m_bot->HasItemCount(reqItem, 1))
             {
-                UseItem(FindItem(reqItem), TARGET_FLAG_OBJECT, m_lootCurrent);
+                UseItem(FindItem(reqItem), TARGET_FLAG_GAMEOBJECT, m_lootCurrent);
                 m_lootCurrent = ObjectGuid();
                 return;
             }
@@ -4143,7 +4142,7 @@ void PlayerbotAI::DoLoot()
                     if (kItem)
                     {
                         TellMaster("I have a skeleton key that can open it!");
-                        UseItem(kItem, TARGET_FLAG_OBJECT, m_lootCurrent);
+                        UseItem(kItem, TARGET_FLAG_GAMEOBJECT, m_lootCurrent);
                         return;
                     }
                     else
@@ -4160,7 +4159,7 @@ void PlayerbotAI::DoLoot()
                     if (bItem)
                     {
                         TellMaster("I can blast it open!");
-                        UseItem(bItem, TARGET_FLAG_OBJECT, m_lootCurrent);
+                        UseItem(bItem, TARGET_FLAG_GAMEOBJECT, m_lootCurrent);
                         return;
                     }
                     else
@@ -5068,7 +5067,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
 
     // default updates occur every two seconds
     SetIgnoreUpdateTime(2);
-    
+
     if (m_botState == BOTSTATE_LOADING)
     {
         if (m_bot->IsBeingTeleported())
@@ -5184,7 +5183,7 @@ void PlayerbotAI::UpdateAI(const uint32 /*p_time*/)
     }
     else if (m_bot->IsSwimming())   // Clear swimming when going out of water
         m_bot->m_movementInfo.RemoveMovementFlag(MOVEFLAG_SWIMMING);
-    
+
     // bot still alive
     if (!m_findNPC.empty())
         findNearbyCreature();
@@ -5561,7 +5560,7 @@ SpellCastResult PlayerbotAI::CastSpell(uint32 spellId)
     uint32 target_type = TARGET_FLAG_UNIT;
 
     if (pSpellInfo->Effect[0] == SPELL_EFFECT_OPEN_LOCK)
-        target_type = TARGET_FLAG_OBJECT;
+        target_type = TARGET_FLAG_GAMEOBJECT;
 
     m_CurrentlyCastingSpellId = spellId;
 
@@ -5581,7 +5580,7 @@ SpellCastResult PlayerbotAI::CastSpell(uint32 spellId)
             *packet << m_lootCurrent.WriteAsPacked();
             m_bot->GetSession()->QueuePacket(std::move(packet));       // queue the packet to get around race condition */
 
-            if (target_type == TARGET_FLAG_OBJECT)
+            if (target_type == TARGET_FLAG_GAMEOBJECT)
             {
                 std::unique_ptr<WorldPacket> packetgouse(new WorldPacket(CMSG_GAMEOBJ_USE, 8));
                 *packetgouse << m_lootCurrent;
@@ -7178,7 +7177,7 @@ void PlayerbotAI::UseItem(Item* item, uint32 targetFlag, ObjectGuid targetGUID)
     *packet << item_guid;
     *packet << targetFlag;
 
-    if (targetFlag & (TARGET_FLAG_UNIT | TARGET_FLAG_ITEM | TARGET_FLAG_OBJECT))
+    if (targetFlag & (TARGET_FLAG_UNIT | TARGET_FLAG_ITEM | TARGET_FLAG_GAMEOBJECT))
         *packet << targetGUID.WriteAsPacked();
 
     m_bot->GetSession()->QueuePacket(std::move(packet));
@@ -9728,7 +9727,7 @@ void PlayerbotAI::_HandleCommandUse(std::string& text, Player& fromPlayer)
             if (go)
             {
                 // DEBUG_LOG("tool (%s) on target gameobject (%s)",tool->GetProto()->Name1,go->GetGOInfo()->name);
-                UseItem(tool, TARGET_FLAG_OBJECT, gotarget); // on gameobject
+                UseItem(tool, TARGET_FLAG_GAMEOBJECT, gotarget); // on gameobject
             }
         }
         else if (unit)
