@@ -526,7 +526,11 @@ static bool checkForCPUID() {
     // add cases for incompatible architectures if they are added
     // e.g., if we ever support __powerpc__ being defined again
 
-    return true;
+#if defined(__arm__)
+    return false;
+#else
+     return true;
+#endif
 }
 
 
@@ -1731,8 +1735,16 @@ void System::cpuid(CPUIDFunction func, uint32& eax, uint32& ebx, uint32& ecx, ui
     edx = 0;
 }
 
-#else
+#elif defined(G3D_LINUX) && defined(__arm__)
+// non-x86 CPU; no CPUID, at least in userspace
+void System::cpuid(CPUIDFunction func, uint32& eax, uint32& ebx, uint32& ecx, uint32& edx) {
+    eax = 0;
+    ebx = 0;
+    ecx = 0;
+    edx = 0;
+}	
 
+#else
 // See http://sam.zoy.org/blog/2007-04-13-shlib-with-non-pic-code-have-inline-assembly-and-pic-mix-well
 // for a discussion of why the second version saves ebx; it allows 32-bit code to compile with the -fPIC option.
 // On 64-bit x86, PIC code has a dedicated rip register for PIC so there is no ebx conflict.
