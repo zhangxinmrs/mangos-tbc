@@ -146,6 +146,7 @@ UPDATE creature_template SET ScriptName='npc_shaman_fire_elemental' WHERE entry 
 UPDATE creature_template SET ScriptName='npc_snakes' WHERE entry IN(19921,19833);
 UPDATE creature_template SET ScriptName='npc_nether_ray' WHERE entry IN(18880,21901,23501);
 UPDATE creature_template SET ScriptName='npc_mojo' WHERE entry=24480;
+UPDATE creature_template SET ScriptName='npc_fire_nova_totem' WHERE entry IN (15483,24320);
 
 /*Quest (quest scripts which are not in one zone)*/
 UPDATE creature_template SET ScriptName='npc_quest_attunement' WHERE entry IN(22421,18528,19935);
@@ -239,6 +240,7 @@ UPDATE creature_template SET ScriptName='boss_grandmaster_vorpil' WHERE entry=18
 UPDATE creature_template SET ScriptName='boss_blackheart_the_inciter' WHERE entry=18667;
 UPDATE creature_template SET ScriptName='boss_ambassador_hellmaw' WHERE entry=18731;
 UPDATE creature_template SET ScriptName='npc_void_traveler' WHERE entry=19226;
+UPDATE gameobject_template SET ScriptName='go_screaming_hall_door' WHERE entry=183295;
 
 /* AZSHARA */
 UPDATE creature_template SET ScriptName='npc_rizzle_sprysprocket' WHERE entry=23002;
@@ -286,6 +288,8 @@ UPDATE creature_template SET ScriptName='boss_reliquary_of_souls' WHERE entry=22
 UPDATE creature_template SET ScriptName='boss_essence_of_suffering' WHERE entry=23418; -- Essence Of Suffering
 UPDATE creature_template SET ScriptName='boss_essence_of_desire' WHERE entry=23419; -- Essence of Desire
 UPDATE creature_template SET ScriptName='boss_essence_of_anger' WHERE entry=23420; -- Essence of Anger
+UPDATE creature_template SET ScriptName='npc_reliquary_LOS_aggro_trigger' WHERE entry IN(23502); -- Reliquary Aggro Trigger
+UPDATE creature_template SET ScriptName='npc_reliquary_combat_trigger' WHERE entry IN(23417); -- Reliquary Combat Trigger
 UPDATE creature_template SET ScriptName='boss_najentus' WHERE entry=22887; -- High Warlord Naj'entus
 UPDATE creature_template SET ScriptName='boss_gurtogg_bloodboil' WHERE entry=22948; -- Gurtogg Bloodboil
 UPDATE creature_template SET ScriptName='boss_mother_shahraz' WHERE entry=22947; -- Mother Shahraz
@@ -298,7 +302,9 @@ UPDATE creature_template SET ScriptName='mob_flame_of_azzinoth' WHERE entry=2299
 UPDATE creature_template SET ScriptName='mob_blade_of_azzinoth' WHERE entry=22996; -- Blade of Azzinoth (Illidan Phase 2)
 UPDATE creature_template SET ScriptName='mob_cage_trap_trigger' WHERE entry=23304; -- Cage Trap mob in Illidan Phase 3/4 Normal
 UPDATE creature_template SET ScriptName='mob_shadow_demon' WHERE entry=23375; -- Shadow Demon in Illidan Demon Form
-UPDATE creature_template SET ScriptName='mob_ashtongue_channeler' WHERE entry=23421; -- Ashtongue CHanneler in Shade of AKama
+UPDATE creature_template SET ScriptName='npc_parasitic_shadowfiend' WHERE entry=23498; -- Parasitic Shadowfiend
+UPDATE gameobject_template SET ScriptName='go_cage_trap' WHERE entry IN(185916);
+UPDATE creature_template SET ScriptName='mob_ashtongue_channeler' WHERE entry=23421; -- Ashtongue Channeler in Shade of AKama
 UPDATE creature_template SET ScriptName='mob_ashtongue_sorcerer' WHERE entry=23215; -- Ashtongue Sorcerer in Shade of Akama
 UPDATE creature_template SET ScriptName='npc_enslaved_soul' WHERE entry=23469;
 UPDATE creature_template SET ScriptName='npc_greater_shadowfiend' WHERE entry=22929;
@@ -745,6 +751,7 @@ INSERT INTO scripted_event_id VALUES
 (10591,'event_spell_summon_nightbane'),
 (10951,'event_spell_medivh_journal');
 UPDATE creature_template SET ScriptName='npc_infernal_relay' WHERE entry=17645;
+UPDATE gameobject_template SET ScriptName='go_chessboard' WHERE entry IN(185324);
 
 /* LOCH MODAN */
 UPDATE creature_template SET ScriptName='npc_mountaineer_pebblebitty' WHERE entry=3836;
@@ -831,7 +838,6 @@ UPDATE creature_template SET ScriptName='boss_gluth' WHERE entry=15932;
 UPDATE creature_template SET ScriptName='boss_thaddius' WHERE entry=15928;
 UPDATE creature_template SET ScriptName='boss_stalagg' WHERE entry=15929;
 UPDATE creature_template SET ScriptName='boss_feugen' WHERE entry=15930;
-UPDATE creature_template SET ScriptName='npc_tesla_coil' WHERE entry=16218;
 UPDATE creature_template SET ScriptName='boss_sapphiron' WHERE entry=15989;
 UPDATE gameobject_template SET ScriptName='go_sapphiron_birth' WHERE entry=181356;
 UPDATE gameobject_template SET ScriptName='go_anub_door' WHERE entry=181126;
@@ -1223,18 +1229,17 @@ UPDATE creature_template SET ScriptName='npc_frostbite' WHERE entry=20061;
 /* ZUL'AMAN */
 UPDATE instance_template SET ScriptName='instance_zulaman' WHERE map=568;
 UPDATE creature_template SET ScriptName='npc_harrison_jones_za' WHERE entry=24358;
-UPDATE gameobject_template SET ScriptName='go_strange_gong' WHERE entry=187359;
+INSERT INTO scripted_event_id VALUES (15897,'event_ritual_of_power');
 UPDATE creature_template SET ScriptName='boss_akilzon' WHERE entry=23574;
 UPDATE creature_template SET ScriptName='mob_soaring_eagle' WHERE entry=24858;
 UPDATE creature_template SET ScriptName='boss_halazzi' WHERE entry=23577;
 UPDATE creature_template SET ScriptName='boss_spirit_lynx' WHERE entry=24143;
+UPDATE creature_template SET ScriptName='npc_corrupted_lightning_totem' WHERE entry IN(24224);
 UPDATE creature_template SET ScriptName='boss_janalai' WHERE entry=23578;
 UPDATE creature_template SET ScriptName='boss_malacrass' WHERE entry=24239;
 UPDATE creature_template SET ScriptName='boss_nalorakk' WHERE entry=23576;
 UPDATE creature_template SET ScriptName='boss_zuljin' WHERE entry=23863;
 UPDATE creature_template SET ScriptName='npc_feather_vortex' WHERE entry=24136;
-UPDATE creature_template SET ScriptName='npc_dragonhawk_egg' WHERE entry=23817;
-UPDATE creature_template SET ScriptName='npc_janalai_firebomb' WHERE entry=23920;
 UPDATE creature_template SET ScriptName='npc_amanishi_hatcher' WHERE entry IN (23818,24504);
 UPDATE creature_template SET ScriptName='npc_forest_frog' WHERE entry=24396;
 UPDATE creature_template SET ScriptName='npc_amanishi_lookout' WHERE entry=24175;
@@ -3001,10 +3006,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1329023,'Move back and hold the line! We cannot fail or all will be lost!',0,1,0,0,'YELL_BASTION_BARRICADE'),
 (-1329024,'Move to the stairs and defend!',0,1,0,0,'YELL_BASTION_STAIRS'),
-(-1329025,'The Scourge have broken into the Bastion! Redouble your efforts! We must not fail!',0,1,0,0,'YELL_BASTION_ENTRANCE'),
-(-1329026,'They have broken into the Hall of Lights! We must stop the intruders!',0,1,0,0,'YELL_BASTION_HALL_LIGHTS'),
-(-1329027,'The Scourge have broken through in all wings! May the light defeat these foul creatures! We shall fight to the last!',0,1,0,0,'YELL_BASTION_INNER_1'),
-(-1329028,'This will not be the end of the Scarlet Crusade! You will not break our line!',0,1,0,0,'YELL_BASTION_INNER_2');
+(-1329025,'The Scourge have broken into the Bastion!  Redouble your efforts!  We must not fail!',0,1,0,0,'YELL_BASTION_ENTRANCE'),
+(-1329026,'They have broken into the Hall of Lights!  We must stop the intruders!',0,1,0,0,'YELL_BASTION_HALL_LIGHTS'),
+-- They have broken into the Hall of Lights!  We must stop the intruders!
+-- Our defenses are failing!  By the light we must prevail!
+(-1329027,'The Scourge have broken through in all wings!  May the light defeat these foul creatures!  We shall fight to the last!',0,1,0,0,'YELL_BASTION_INNER_1'),
+(-1329028,'This will not be the end of the Scarlet Crusade!  You will not break our line!',0,1,0,0,'YELL_BASTION_INNER_2');
 
 -- -1 349 000 MARAUDON
 
@@ -3416,11 +3423,11 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1533028,'No... more... Feugen...',8803,1,0,0,'feugen SAY_FEUG_DEATH'),
 
 (-1533029,'You are too late... I... must... OBEY!',8872,1,0,0,'thaddius SAY_GREET'),
-(-1533030,'KILL!',8867,1,0,0,'thaddius SAY_AGGRO1'),
-(-1533031,'EAT YOUR BONES!',8868,1,0,0,'thaddius SAY_AGGRO2'),
-(-1533032,'BREAK YOU!',8869,1,0,0,'thaddius SAY_AGGRO3'),
-(-1533033,'You die now!',8877,1,0,0,'thaddius SAY_SLAY'),
-(-1533034,'Now YOU feel pain!',8871,1,0,0,'thaddius SAY_ELECT'),
+(-1533030,'Kill!',8867,1,0,0,'thaddius SAY_AGGRO1'),
+(-1533031,'Eat... your... bones...',8868,1,0,0,'thaddius SAY_AGGRO2'),
+(-1533032,'Break... you!',8869,1,0,0,'thaddius SAY_AGGRO3'),
+(-1533033,'You... die now!',8877,1,0,0,'thaddius SAY_SLAY'),
+(-1533034,'Now you feel pain...',8871,1,0,0,'thaddius SAY_ELECT'),
 (-1533035,'Thank... you...',8870,1,0,0,'thaddius SAY_DEATH'),
 (-1533036,'REUSE_ME',0,0,0,0,'REUSE'),
 (-1533037,'REUSE_ME',0,0,0,0,'REUSE'),
@@ -3554,7 +3561,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1533148,'%s sprays strands of web everywhere!',0,3,0,0,'maexxna EMOTE_SPRAY'),
 
 (-1533149,'%s loses its link!',0,3,0,0,'tesla_coil EMOTE_LOSING_LINK'),
-(-1533150,'%s overloads!',0,3,0,0,'tesla_coil EMOTE_TESLA_OVERLOAD'),
+(-1533150,'%s overloads!',0,7,0,0,'tesla_coil EMOTE_TESLA_OVERLOAD'),
 (-1533151,'The polarity has shifted!',0,3,0,0,'thaddius EMOTE_POLARITY_SHIFT'),
 
 (-1533152,'%s decimates all nearby flesh!',0,3,0,0,'gluth EMOTE_DECIMATE'),
@@ -4294,16 +4301,16 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564017,'Hail Akama!',0,1,0,0,'akama shade broken SAY_BROKEN_FREE_02'),
 
 (-1564018,'You play, you pay.',11501,1,0,0,'shahraz SAY_TAUNT1'),
-(-1564019,'I\'m not impressed.',11502,1,0,0,'shahraz SAY_TAUNT2'),
+(-1564019,'I''m not impressed.',11502,1,0,0,'shahraz SAY_TAUNT2'),
 (-1564020,'Enjoying yourselves?',11503,1,0,0,'shahraz SAY_TAUNT3'),
 (-1564021,'So... business or pleasure?',11504,1,0,0,'shahraz SAY_AGGRO'),
 (-1564022,'You seem a little tense...',11505,1,0,0,'shahraz SAY_SPELL1'),
 (-1564023,'Don\'t be shy.',11506,1,0,0,'shahraz SAY_SPELL2'),
-(-1564024,'I\'m all... yours.',11507,1,0,0,'shahraz SAY_SPELL3'),
+(-1564024,'I''m all... yours.',11507,1,0,0,'shahraz SAY_SPELL3'),
 (-1564025,'Easy come, easy go.',11508,1,0,0,'shahraz SAY_SLAY1'),
 (-1564026,'So much for a happy ending.',11509,1,0,0,'shahraz SAY_SLAY2'),
 (-1564027,'Stop toying with my emotions!',11510,1,0,0,'shahraz SAY_ENRAGE'),
-(-1564028,'I wasn\'t finished.',11511,1,0,0,'shahraz SAY_DEATH'),
+(-1564028,'I wasn''t finished.',11511,1,0,0,'shahraz SAY_DEATH'),
 
 (-1564029,'Horde will... crush you.',11432,1,0,0,'bloodboil SOUND_AGGRO'),
 (-1564030,'Time to feast!',11433,1,0,0,'bloodboil SAY_SLAY1'),
@@ -4329,8 +4336,8 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564048,'Don\'t leave me alone!',11416,1,0,0,'essence SUFF_SAY_AGGRO'),
 (-1564049,'Look at what you make me do!',11417,1,0,0,'essence SUFF_SAY_SLAY1'),
 (-1564050,'I didn\'t ask for this!',11418,1,0,0,'essence SUFF_SAY_SLAY2'),
-(-1564051,'The pain is only beginning...',11419,1,0,0,'essence SUFF_SAY_SLAY3'),
-(-1564052,'I don\'t want to go back!',11420,1,0,0,'essence SUFF_SAY_RECAP'),
+(-1564051,'The pain is only beginning...',11419,1,0,0,'essence SUFF_SAY_FRENZY'),
+(-1564052,'I don''t want to go back!',11420,1,0,0,'essence SUFF_SAY_RECAP'),
 (-1564053,'Now what do I do?',11421,1,0,0,'essence SUFF_SAY_AFTER'),
 (-1564054,'REUSE_ME',0,0,0,0,'REUSE_ME'),
 
@@ -4338,17 +4345,18 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564056,'Fulfillment is at hand.',11409,1,0,0,'essence DESI_SAY_SLAY1'),
 (-1564057,'Yes... you\'ll stay with us now...',11410,1,0,0,'essence DESI_SAY_SLAY2'),
 (-1564058,'Your reach exceeds your grasp.',11412,1,0,0,'essence DESI_SAY_SLAY3'),
-(-1564059,'Be careful what you wish for...',11411,1,0,0,'essence DESI_SAY_SPEC'),
+(-1564059,'Be careful what you wish for.',11411,1,0,0,'essence DESI_SAY_SPEC'),
 (-1564060,'I\'ll be waiting...',11413,1,0,0,'essence DESI_SAY_RECAP'),
-(-1564061,'I won\'t be far!',11414,1,0,0,'essence DESI_SAY_AFTER'),
+(-1564061,'I won''t be far!',11414,1,0,0,'essence DESI_SAY_AFTER'),
 
 (-1564062,'Beware: I live!',11399,1,0,0,'essence ANGER_SAY_FREED'),
 (-1564063,'So... foolish.',11400,1,0,0,'essence ANGER_SAY_FREED2'),
 (-1564064,'<maniacal cackle>',11401,1,0,0,'essence ANGER_SAY_SLAY1'),
 (-1564065,'Enough. No more.',11402,1,0,0,'essence ANGER_SAY_SLAY2'),
 (-1564066,'On your knees!',11403,1,0,0,'essence ANGER_SAY_SPEC'),
-(-1564067,'Beware, coward.',11405,1,0,0,'essence ANGER_SAY_BEFORE'),
+(-1564067,'Beware, coward!',11405,1,0,0,'essence ANGER_SAY_BEFORE'),
 (-1564068,'I won\'t... be... ignored.',11404,1,0,0,'essence ANGER_SAY_DEATH'),
+(-1564142,'%s seethes in anger!',0,1,0,0,'essence ANGER_SAY_SEETHE'),
 
 (-1564069,'You wish to test me?',11524,1,0,0,'council vera AGGRO'),
 (-1564070,'I have better things to do...',11422,1,0,0,'council gath AGGRO'),
@@ -4363,11 +4371,11 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564077,'Enjoy your final moments.',11426,1,0,0,'council gath SPECIAL1'),
 (-1564078,'You\'re not caught up for this!',11528,1,0,0,'council vera SPECIAL1'),
 (-1564079,'No second chances!',11486,1,0,0,'council mala SPECIAL1'),
-(-1564080,'Diel fin\'al.',11444,1,0,0,'council zere SPECIAL1'),
+(-1564080,'Diel fin''al.',11444,1,0,0,'council zere SPECIAL1'),
 
 (-1564081,'You are mine!',11427,1,0,0,'council gath SPECIAL2'),
 (-1564082,'Anar\'alah belore!',11529,1,0,0,'council vera SPECIAL2'),
-(-1564083,'I\'m full of surprises!',11487,1,0,0,'council mala SPECIAL2'),
+(-1564083,'I''m full of surprises!',11487,1,0,0,'council mala SPECIAL2'),
 (-1564084,'Sha\'amoor ara mashal?',11445,1,0,0,'council zere SPECIAL2'),
 
 (-1564085,'Selama am\'oronor!',11423,1,0,0,'council gath SLAY'),
@@ -4381,12 +4389,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564092,'Belesa menoor!',11442,1,0,0,'council zere SLAY_COMT'),
 
 (-1564093,'Lord Illidan... I...',11425,1,0,0,'council gath DEATH'),
-(-1564094,'You got lucky!',11527,1,0,0,'council vera DEATH'),
+(-1564094,'You got... lucky.',11527,1,0,0,'council vera DEATH'),
 (-1564095,'Destiny... awaits.',11485,1,0,0,'council mala DEATH'),
-(-1564096,'Diel ma\'ahn... orindel\'o.',11443,1,0,0,'council zere DEATH'),
+(-1564096,'Diel ma''ahn... orindel''o.',11443,1,0,0,'council zere DEATH'),
 
 (-1564097,'Akama. Your duplicity is hardly surprising. I should have slaughtered you and your malformed brethren long ago.',11463,1,0,0,'illidan SAY_ILLIDAN_SPEECH_1'),
-(-1564098,'We\'ve come to end your reign, Illidan. My people, and all of Outland, shall be free!',11389,1,0,25,'akama(illidan) SAY_AKAMA_SPEECH_2'),
+(-1564098,'We''ve come to end your reign, Illidan. My people, and all of Outland, shall be free!',11389,1,0,25,'akama(illidan) SAY_AKAMA_SPEECH_2'),
 (-1564099,'Boldly said. But I remain... unconvinced.',11464,1,0,6,'illidan SAY_ILLIDAN_SPEECH_3'),
 (-1564100,'The time has come! The moment is at hand!',11380,1,0,22,'akama(illidan) SAY_AKAMA_SPEECH_4'),
 (-1564101,'You are not prepared!',11466,1,0,406,'illidan SAY_ILLIDAN_SPEECH_5'),
@@ -4397,23 +4405,23 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564106,'Feel the hatred of ten thousand years!',11470,1,0,0,'illidan SAY_FRENZY'),
 (-1564107,'It is finished. You are beaten.',11496,1,0,0,'maiev SAY_MAIEV_EPILOGUE_1'),
 (-1564108,'You have won... Maiev. But the huntress... is nothing without the hunt. You... are nothing... without me.',11478,1,0,0,'illidan SAY_ILLIDAN_EPILOGUE_2'),
-(-1564109,'He\'s right. I feel nothing... I am... nothing.',11497,1,0,0,'maiev SAY_MAIEV_EPILOGUE_3'),
+(-1564109,'He''s right. I feel nothing... I am... nothing.',11497,1,0,0,'maiev SAY_MAIEV_EPILOGUE_3'),
 (-1564110,'Farewell, champions.',11498,1,0,0,'maiev SAY_MAIEV_EPILOGUE_4'),
 (-1564111,'The Light will bless these dismal halls once again.... I swear it.',11387,1,0,0,'akama(illidan) SAY_AKAMA_EPILOGUE_5'),
 (-1564112,'I can feel your hatred.',11467,1,0,0,'illidan SAY_TAUNT_1'),
 (-1564113,'Give in to your fear!',11468,1,0,0,'illidan SAY_TAUNT_2'),
 (-1564114,'You know nothing of power!',11469,1,0,0,'illidan SAY_TAUNT_3'),
-(-1564115,'Such... arrogance!',11471,1,0,0,'illidan SAY_TAUNT_4'),
+(-1564115,'Such arrogance!',11471,1,0,0,'illidan SAY_TAUNT_4'),
 (-1564116,'That is for Naisha!',11493,1,0,0,'maiev SAY_MAIEV_TAUNT_1'),
 (-1564117,'Bleed as I have bled!',11494,1,0,0,'maiev SAY_MAIEV_TAUNT_2'),
 (-1564118,'There shall be no prison for you this time!',11495,1,0,0,'maiev SAY_MAIEV_TRAP'),
 (-1564119,'Meet your end, demon!',11500,1,0,0,'maiev SAY_MAIEV_TAUNT_4'),
-(-1564120,'Be wary friends, The Betrayer meditates in the court just beyond.',11388,0,0,0,'akama(illidan) SAY_AKAMA_BEWARE'),
+(-1564120,'Be wary, friends. The Betrayer meditates in the court just beyond.',11388,0,0,0,'akama(illidan) SAY_AKAMA_BEWARE'),
 (-1564121,'Come, my minions. Deal with this traitor as he deserves!',11465,1,0,0,'illidan SAY_AKAMA_MINION'),
-(-1564122,'I\'ll deal with these mongrels. Strike now, friends! Strike at the betrayer!',11390,1,0,22,'akama(illidan) SAY_AKAMA_LEAVE'),
+(-1564122,'I will deal with these mongrels! Strike now, friends! Strike at the Betrayer!',11390,1,0,22,'akama(illidan) SAY_AKAMA_LEAVE'),
 (-1564123,'Who shall be next to taste my blades?!',11473,1,0,0,'illidan SAY_KILL1'),
 (-1564124,'This is too easy!',11472,1,0,0,'illidan SAY_KILL2'),
-(-1564125,'I will not be touched by rabble such as you!',11479,1,0,254,'illidan SAY_TAKEOFF'),
+(-1564125,'I will not be touched by rabble such as you!',11479,1,0,0,'illidan SAY_TAKEOFF'),
 (-1564126,'Behold the flames of Azzinoth!',11480,1,0,0,'illidan SAY_SUMMONFLAMES'),
 (-1564127,'Stare into the eyes of the Betrayer!',11481,1,0,0,'illidan SAY_EYE_BLAST'),
 (-1564128,'Behold the power... of the demon within!',11475,1,0,0,'illidan SAY_MORPH'),
@@ -4428,8 +4436,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1564135,'The Betrayer no longer holds sway over us.  His dark magic over the Ashtongue soul has been destroyed!',0,1,0,1,'akama shade SAY_FREE_2'),
 (-1564136,'I thank you for your aid, brothers.  Our people will be redeemed!',0,0,0,66,'akama(illidan) SAY_OPEN_DOOR_5'),
 
-(-1564137,'You hear a loud rumble of metal grinding on stone...',0,2,0,0,'Black Temple Trigger - Open Najentus Door');
--- -1564138 taken on najentus
+(-1564137,'You hear a loud rumble of metal grinding on stone...',0,7,0,0,'Black Temple Trigger - Open Najentus Door'),
+-- -1564138 taken on Najentus
+(-1564139,'The door to The Den of Mortal Delights has opened.',0,7,0,0,'Black Temple Trigger - Open Mother Door'),
+(-1564140,'Let us finish what we''ve started.  I will lead you to Illidan''s abode once you''ve recovered your strength.',0,0,0,1,'akama(illidan) SAY_AKAMA_COUNCIL_DEAD'),
+(-1564141,'%s falls to the floor.',0,7,0,0,'Maiev');
+-- -1564142 taken on Essence of Anger
 
 
 -- -1 565 000 GRUUL'S LAIR
@@ -4466,14 +4478,14 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1568004,'You done run outta time!',12035,1,0,0,'janalai SAY_BERSERK'),
 (-1568005,'It all be over now, mon!',12036,1,0,0,'janalai SAY_SLAY_1'),
 (-1568006,'Tazaga-choo!',12037,1,0,0,'janalai SAY_SLAY_2'),
-(-1568007,'Zul\'jin... got a surprise for you...',12038,1,0,0,'janalai SAY_DEATH'),
+(-1568007,'Zul''jin... got a surprise for you....',12038,1,0,0,'janalai SAY_DEATH'),
 (-1568008,'Come, strangers. The spirit of the dragonhawk hot be hungry for worthy souls.',12039,1,0,0,'janalai SAY_EVENT_STRANGERS'),
 (-1568009,'Come, friends. Your bodies gonna feed ma hatchlings, and your souls are going to feed me with power!',12040,1,0,0,'janalai SAY_EVENT_FRIENDS'),
 
-(-1568010,'Get da move on, guards! It be killin\' time!',12066,1,0,51,'nalorakk SAY_WAVE1_AGGRO'),
+(-1568010,'Get da move on, guards! It be killin'' time!',12066,1,0,51,'nalorakk SAY_WAVE1_AGGRO'),
 (-1568011,'Guards, go already! Who you more afraid of, dem... or me?',12067,1,0,51,'nalorakk SAY_WAVE2_STAIR1'),
 (-1568012,'Ride now! Ride out dere and bring me back some heads!',12068,1,0,51,'nalorakk SAY_WAVE3_STAIR2'),
-(-1568013,'I be losin\' me patience! Go on: make dem wish dey was never born!',12069,1,0,51,'nalorakk SAY_WAVE4_PLATFORM'),
+(-1568013,'I be losin'' me patience! Go on: make dem wish dey was never born!',12069,1,0,51,'nalorakk SAY_WAVE4_PLATFORM'),
 (-1568014,'What could be better than servin\' da bear spirit for eternity? Come closer now. Bring your souls to me!',12078,1,0,0,'nalorakk SAY_EVENT1_SACRIFICE'),
 (-1568015,'Don\'t be delayin\' your fate. Come to me now. I make your sacrifice quick.',12079,1,0,0,'nalorakk SAY_EVENT2_SACRIFICE'),
 (-1568016,'You be dead soon enough!',12070,1,0,0,'nalorakk SAY_AGGRO'),
@@ -4483,59 +4495,59 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1568020,'You had your chance, now it be too late!',12074,1,0,0,'nalorakk SAY_BERSERK'),
 (-1568021,'Mua-ha-ha! Now whatchoo got to say?',12075,1,0,0,'nalorakk SAY_SLAY1'),
 (-1568022,'Da Amani gonna rule again!',12076,1,0,0,'nalorakk SAY_SLAY2'),
-(-1568023,'I... be waitin\' on da udda side....',12077,1,0,0,'nalorakk SAY_DEATH'),
+(-1568023,'I... be waitin'' on da udda side....',12077,1,0,0,'nalorakk SAY_DEATH'),
 
-(-1568024,'Da eagles gonna bear your spirits to me. Your sacrifice is not gonna be in vein!',12122,1,0,0,'akilzon SAY_EVENT1'),
-(-1568025,'Your death gonna be quick, strangers. You shoulda never have come to this place...',12123,1,0,0,'akilzon SAY_EVENT2'),
+(-1568024,'My eagles gonna bear your spirits to me. Your sacrifices not gonna be in vain....',12122,1,0,0,'akilzon SAY_EVENT1'),
+(-1568025,'Your death gonna be quick, strangers. You shoulda never come to this place....',12123,1,0,0,'akilzon SAY_EVENT2'),
 (-1568026,'I be da predator! You da prey...',12013,1,0,0,'akilzon SAY_AGGRO'),
 (-1568027,'Feed, me bruddahs!',12014,1,0,0,'akilzon SAY_SUMMON'),
 (-1568028,'Come, and join me bruddahs!',12015,1,0,0,'akilzon SAY_SUMMON_ALT'),
 (-1568029,'All you be doing is wasting my time!',12016,1,0,0,'akilzon SAY_ENRAGE'),
 (-1568030,'Ya got nothin\'!',12017,1,0,0,'akilzon SAY_SLAY1'),
 (-1568031,'Stop your cryin\'!',12018,1,0,0,'akilzon SAY_SLAY2'),
-(-1568032,'You can\'t... kill... me spirit!',12019,1,0,0,'akilzon SAY_DEATH'),
+(-1568032,'You can''t... kill... me spirit!',12019,1,0,0,'akilzon SAY_DEATH'),
 (-1568033,'An Electrical Storm Appears!',0,2,0,0,'akilzon EMOTE_STORM'),
 
 (-1568034,'Get on ya knees and bow.... to da fang and claw!',12020,1,0,0,'halazzi SAY_AGGRO'),
-(-1568035,'I fight wit\' untamed spirit....',12021,1,0,0,'halazzi SAY_SPLIT'),
+(-1568035,'I fight wit'' untamed spirit....',12021,1,0,0,'halazzi SAY_SPLIT'),
 (-1568036,'Spirit, come back to me!',12022,1,0,0,'halazzi SAY_MERGE'),
 (-1568037,'Me gonna carve ya now!',12023,1,0,0,'halazzi SAY_SABERLASH1'),
 (-1568038,'You gonna leave in pieces!',12024,1,0,0,'halazzi SAY_SABERLASH2'),
 (-1568039,'Whatch you be doing? Pissin\' yourselves...',12025,1,0,0,'halazzi SAY_BERSERK'),
-(-1568040,'You cant fight the power!',12026,1,0,0,'halazzi SAY_KILL1'),
+(-1568040,'You can''t fight da power!',12026,1,0,0,'halazzi SAY_KILL1'),
 (-1568041,'You gonna fail!',12027,1,0,0,'halazzi SAY_KILL2'),
-(-1568042,'Chaga... choka\'jinn.',12028,1,0,0,'halazzi SAY_DEATH'),
+(-1568042,'Chaga... choka''jinn.',12028,1,0,0,'halazzi SAY_DEATH'),
 (-1568043,'Come, fools. Fill ma empty cages...',12029,1,0,0,'halazzi SAY_EVENT1'),
 (-1568044,'I be waitin, strangers. Your deaths gonna make me stronger!',12030,1,0,0,'halazzi SAY_EVENT2'),
 
-(-1568045,'Da shadow gonna fall on you...',12041,1,0,0,'malacrass SAY_AGGRO'),
+(-1568045,'Da shadow gonna fall on you....',12041,1,0,0,'malacrass SAY_AGGRO'),
 (-1568046,'Ya don\'t kill me yet, ya don\'t get another chance!',12042,1,0,0,'malacrass SAY_ENRAGE'),
 (-1568047,'Dis a nightmare ya don\' wake up from!',12043,1,0,0,'malacrass SAY_KILL1'),
 (-1568048,'Azzaga choogo zinn!',12044,1,0,0,'malacrass SAY_KILL2'),
 (-1568049,'Your will belong ta me now!',12045,1,0,0,'malacrass SAY_SOUL_SIPHON'),
-(-1568050,'Darkness comin\' for you...',12046,1,0,0,'malacrass SAY_DRAIN_POWER'),
+(-1568050,'Darkness comin'' for you....',12046,1,0,0,'malacrass SAY_DRAIN_POWER'),
 (-1568051,'Your soul gonna bleed!',12047,1,0,0,'malacrass SAY_SPIRIT_BOLTS'),
 (-1568052,'It not gonna make no difference.',12048,1,0,0,'malacrass SAY_ADD_DIED1'),
 (-1568053,'You gonna die worse dan him.',12049,1,0,0,'malacrass SAY_ADD_DIED2'),
 (-1568054,'Dat no bodda me.',12050,1,0,0,'malacrass SAY_ADD_DIED3'),
-(-1568055,'Dis not... da end of me...',12051,1,0,0,'malacrass SAY_DEATH'),
+(-1568055,'Dis not... da end for me!',12051,1,0,0,'malacrass SAY_DEATH'),
 
-(-1568056,'Everybody always wanna take from us. Now we gonna start takin\' back. Anybody who get in our way...gonna drown in dey own blood! Da Amani empire be back now...seekin\' vengeance. And we gonna start wit\' you.',12090,1,0,0,'zuljin SAY_INTRO'),
+(-1568056,'Everybody always wanna take from us. Now we gonna start takin\' back. Anybody who get in our way...gonna drown in dey own blood! Da Amani empire be back now...seekin\' vengeance. And we gonna start wit\' you.',12090,6,0,0,'zuljin SAY_INTRO'),
 (-1568057,'Nobody badduh dan me!',12091,1,0,0,'zuljin SAY_AGGRO'),
 (-1568058,'Got me some new tricks... like me brudda bear....',12092,1,0,0,'zuljin SAY_BEAR_TRANSFORM'),
-(-1568059,'Dere be no hidin\' from da eagle!',12093,1,0,0,'zuljin SAY_EAGLE_TRANSFORM'),
+(-1568059,'Dere be no hidin'' from da eagle!',12093,1,0,0,'zuljin SAY_EAGLE_TRANSFORM'),
 (-1568060,'Let me introduce you to me new bruddas: fang and claw!',12094,1,0,0,'zuljin SAY_LYNX_TRANSFORM'),
-(-1568061,'Ya don\' have to look to da sky to see da dragonhawk!',12095,1,0,0,'zuljin SAY_DRAGONHAWK_TRANSFORM'),
+(-1568061,'Ya don'' have to look to da sky to see da dragonhawk!',12095,1,0,0,'zuljin SAY_DRAGONHAWK_TRANSFORM'),
 (-1568062,'Fire kill you just as quick!',12096,1,0,0,'zuljin SAY_FIRE_BREATH'),
 (-1568063,'You too slow! Me too strong!',12097,1,0,0,'zuljin SAY_BERSERK'),
 (-1568064,'Da Amani de chuka!',12098,1,0,0,'zuljin SAY_KILL1'),
 (-1568065,'Lot more gonna fall like you!',12099,1,0,0,'zuljin SAY_KILL2'),
-(-1568066,'Mebbe me fall...but da Amani empire...never gonna die...',12100,1,0,0,'zuljin SAY_DEATH'),
+(-1568066,'Mebbe me fall... but da Amani empire... never gonna die.',12100,1,0,0,'zuljin SAY_DEATH'),
 
 (-1568067,'Zul\'jin got a surprise for ya...',12052,6,0,0,'zulaman SAY_INST_RELEASE'),
 (-1568068,'Da spirits gonna feast today! Begin da ceremonies, sacrifice da prisoners... make room for our new guests!',12053,6,0,0,'zulaman SAY_INST_BEGIN'),
 (-1568069,'Take your pick, trespassers! Any of ma priests be happy to accommodate ya.',12054,6,0,0,'zulaman SAY_INST_PROGRESS_1'),
-(-1568070,'Don\'t be shy. Thousands have come before you. Ya not be alone in your service.',12055,6,0,0,'zulaman SAY_INST_PROGRESS_2'),
+(-1568070,'Don''t be shy. Thousands have come before you. Ya not be alone in your service.',12055,6,0,0,'zulaman SAY_INST_PROGRESS_2'),
 (-1568071,'Ya gonna fail, strangers. Many try before you, but dey only make us stronger!',12056,6,0,0,'zulaman SAY_INST_PROGRESS_3'),
 (-1568072,'Your efforts was in vain, trespassers. The rituals nearly be complete.',12057,6,0,0,'zulaman SAY_INST_WARN_1'),
 (-1568073,'Soon da cages gonna be empty, da sacrifices be complete, and you gonna take dere places.',12058,6,0,0,'zulaman SAY_INST_WARN_2'),
@@ -4545,28 +4557,28 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1568077,'Ya not do too bad.... Your efforts delay da inevitable for a small time. Come to me now. Ya prove yourselves worthy offerings.',12062,6,0,0,'zulaman SAY_INST_SACRIF2'),
 (-1568078,'Watch now. Every offering gonna strengthen our ties to da spirit world. Soon, we gonna be unstoppable!',12065,6,0,0,'zulaman SAY_INST_COMPLETE'),
 
-(-1568079,'Suit yourself. At least five of you must assist me if we\'re to get inside. Follow me....',0,1,0,0,'harrison SAY_START'),
+(-1568079,'Suit yourself. At least five of you must assist me if we''re to get inside. Follow me....',0,1,0,0,'harrison SAY_START'),
 (-1568080,'According to my calculations, if enough of us bang the gong at once the seal on these doors will break and we can enter.',0,1,0,0,'harrison SAY_AT_GONG'),
-(-1568081,'I\'ve researched this site extensively and I won\'t allow any dim-witted treasure hunters to swoop in and steal what belongs to in a museum. I\'ll lead this charge.',0,1,0,0,'harrison SAY_OPEN_ENTRANCE'),
+(-1568081,'I''ve researched this site extensively and I won''t allow any dim-witted treasure hunters to swoop in and steal what belongs in a museum. I''ll lead this charge.',0,1,0,0,'harrison SAY_OPEN_ENTRANCE'),
 
 (-1568082,'%s absorbs the essence of the bear spirit!',0,2,0,0,'zuljin EMOTE_BEAR_SPIRIT'),
 (-1568083,'%s absorbs the essence of the eagle spirit!',0,2,0,0,'zuljin EMOTE_EAGLE_SPIRIT'),
 (-1568084,'%s absorbs the essence of the lynx spirit!',0,2,0,0,'zuljin EMOTE_LYNX_SPIRIT'),
 (-1568085,'%s absorbs the essence of the dragonhawk spirit!',0,2,0,0,'zuljin EMOTE_DRAGONHAWK_SPIRIT'),
 
-(-1568086,'In fact, it would be best if you just stay here. You\'d only get in my way....',0,1,0,0,'harrison SAY_OPEN_ENTRANCE_2'),
+(-1568086,'In fact, it would be best if you just stay here. You''d only get in my way....',0,1,0,0,'harrison SAY_OPEN_ENTRANCE_2'),
 
 (-1568087,'More intruders! Sound da alarm!',12104,1,0,25,'amanishi guardian SAY_SOUND_ALARM'),
 
 (-1568088,'Akil\'zon, the invaders approach!',0,1,0,5,'amanishi lookout SAY_START_GAUNTLET'),
 
-(-1568089,'Hallooo.... You just gunna sit down there an\' pat yerselves on the back? What kinda rescuers are ya?',2716,1,0,1,'harkor SAY_HARKOR_HELP_1'),
+(-1568089,'Hallooo.... You just gunna sit down there an'' pat yerselves on the back? What kinda rescuers are ya?',2716,1,0,1,'harkor SAY_HARKOR_HELP_1'),
 (-1568090,'Pssst! Up \'ere, in the cage. Come and lemme get a look at yeh.',2716,1,0,1,'harkor SAY_HARKOR_HELP_2'),
 (-1568091,'So.... How\'s about one \'a ya stroll on up \'ere an\' help me out, eh?',2716,1,0,1,'harkor SAY_HARKOR_HELP_3'),
 (-1568092,'Yoohoo. Over here... the trapped dwarf. Come on, lemme have a word with yeh.',2716,1,0,1,'harkor SAY_HARKOR_HELP_4'),
-(-1568093,"Ahh, freedom!",2725,0,0,4,'harkor SAY_HARKOR_EVENT_1'),
-(-1568094,"A'course it only be fair that I reward yeh fer me rescue. Now where'd them savages put me satchel?",0,0,0,1,'harkor SAY_HARKOR_EVENT_2'),
-(-1568095,"Don't be shy, now. Help yerselves. If it weren't fer yer help, them basterds'd be shrinkin' me head right about now.",0,0,0,1,'harkor SAY_HARKOR_EVENT_3'),
+(-1568093,'Ahh, freedom!',2725,0,0,4,'harkor SAY_HARKOR_EVENT_1'),
+(-1568094,'A''course it only be fair that I reward yeh fer me rescue. Now where''d them savages put me satchel?',0,0,0,1,'harkor SAY_HARKOR_EVENT_2'),
+(-1568095,'Don''t be shy, now. Help yerselves. If it weren''t fer yer help, them basterds''d be shrinkin'' me head right about now.',0,0,0,1,'harkor SAY_HARKOR_EVENT_3'),
 
 (-1568096,'You kill the trollbear, mon? It be safe for Tanzar to come out now?',2850,1,0,1,'tanzar SAY_TANZAR_HELP_1'),
 (-1568097,'Hey mon! Don\'t ya be forgettin\' about Tanzar over here.',2850,1,0,1,'tanzar SAY_TANZAR_HELP_2'),
@@ -4586,11 +4598,11 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1568110,'Stand clear....',0,0,0,0,'kraz SAY_KRAZ_EVENT_3'),
 (-1568111,'Please, friends, accept this offering with Kraz\'s thanks.',6364,0,0,66,'kraz SAY_KRAZ_EVENT_4'),
 
-(-1568112,'Wowee! It was amazing how you beat that big bad troll into the ground like that and it\'s too bad I can\'t reach the handle of this cage or I would have jumped in and blown him to bits to get him back for killing all of the other poor prisoners and scaring me so badly and I feel bad for asking you for any more help but could you maybe come over and let me out of here?',0,1,0,21,'ashli SAY_ASHLI_HELP_1'),
+(-1568112,'Wowee! It was amazing how you beat that big bad troll into the ground like that and it''s too bad I can''t reach the handle of this cage or I would have jumped in and blown him to bits to get him back for killing all of the other poor prisoners and scaring me so badly and I feel bad for asking you for any more help but could you maybe come over and let me out of here?',0,1,0,21,'ashli SAY_ASHLI_HELP_1'),
 (-1568113,'Ahem... so, I most certainly don\'t blame you for taking your time and catching your breath and congratulating yourselves for such heroism after such a long and hard-fought battle with that horrible monster just so long as when you\'re finished you don\'t forget about me over here because even though I\'m small I think I can still find some way to repay you for your amazing bravery....',0,1,0,1,'ashli SAY_ASHLI_HELP_2'),
 (-1568114,'So... as much as I hate to complain after being saved from a horrible death I just thought you should know that I\'m still over here stuck in one of these messy cages and it would really be great if you could come on over and let me out so I could help you celebrate your amazing victory over that big crazy scary troll-cat... thing.',0,1,0,1,'ashli SAY_ASHLI_HELP_3'),
 (-1568115,'I\'m sure you all must be in a big hurry and probably have some more big dangerous monsters to kill but if you would just take a moment and come help me out of this cage before rushing off it would make me so happy and excited that I would barely be able to contain myself so if you get a moment I\'ll just be over here... waiting... patiently....',0,1,0,1,'ashli SAY_ASHLI_HELP_4'),
-(-1568116,'Weeee! I\'m alive, I\'m alive, I\'m alive! Oh, I hope it\'s not too forward of me to tell you that I think I love you all and I hope I can find my bag because you certainly deserve a little something extra, you know, for the effort and all that you must have went through to save me...',0,0,0,4,'ashli SAY_ASHLI_EVENT_1'),
+(-1568116,'Weeee! I''m alive, I''m alive, I''m alive! Oh, I hope it''s not too forward of me to tell you that I think I love you all and I hope I can find my bag because you certainly deserve a little something extra, you know, for the effort and all that you must have went through to save me...',0,0,0,4,'ashli SAY_ASHLI_EVENT_1'),
 (-1568117,'Hmm, maybe it\'s this one - oh by the way, did I ever tell you about the time Fudgerick Two-toots snuck up on me while I was casting a fireball? We call him two-toots because, well, nevermind that, it was just terrible timing, and momma was soo mad - my eyebrows are just now growing back....',0,0,0,0,'ashli SAY_ASHLI_EVENT_2'),
 (-1568118,'Nope, not in that one either - well, it must be around here somewhere, by the way, did I mention how wonderful it is to be out of that stinky cage? It was almost impossible to run around in there but I did anyway but sometimes I got going so fast that I ended up walking on the walls of the  cage so finally I stopped trying and just turned around in circles....',2691,0,0,0,'ashli SAY_ASHLI_EVENT_3'),
 (-1568119,'There\'s my bag! At last I\'ve found it and now it\'s my gift to you and I truly hope you like it because I want you to all remember this wonderful moment for as long as you live and I hope that when you think of it you\'ll smile inside because I know I\'ll never forget it in a million years and I can\'t wait to tell momma all about it when I get back home.... Do you like my earrings?',0,0,0,0,'ashli SAY_ASHLI_EVENT_4'),
@@ -4659,7 +4671,10 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1568168,'Thank goodness you came along when you did. Please, take one of these troll boxes to remember me by.',0,0,0,0,'hollee SAY_HOLLEE_1'), -- broadcast text id 23427
 (-1568169,'I never want to see this nasty pond again. Thank you, $n. I\'ll never forget you!',0,0,0,0,'hollee SAY_HOLLEE_1'), -- broadcast text id 23428
 
-(-1568170,'Mojo leaps into $n\'s pocket!',0,2,0,0,'forest frog SAY_MOJO'); -- broadcast text id 23485
+(-1568170,'Mojo leaps into $n\'s pocket!',0,2,0,0,'forest frog SAY_MOJO'), -- broadcast text id 23485
+
+(-1568171,'Mua-ha-ha!',0,0,0,0,'Nalorakk - Say Run to next wave'),
+(-1568172,'%s transforms into a bear!',0,0,0,0,'Nalorakk - To Bear emote');
 
 -- -1 580 000 SUNWELL PLATEAU
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -7939,33 +7954,6 @@ INSERT INTO script_waypoint VALUES
 (23002,0,72,1780.24,-3775.53,30.5931,0,0,0,''),
 (23002,0,73,1753.28,-3786.79,30.7445,0,0,0,''),
 (23002,0,74,1731.09,-3796.64,36.8866,0,0,0,''),
-(23089,0,0,660.7646,305.7663,271.7023,0,0,0,'escort paused - GOSSIP_ITEM_PREPARE'),
-(23089,0,1,673.1424,354.9833,271.6941,0,0,0,''),
-(23089,0,2,696.6788,380.0098,271.8946,0,0,0,''),
-(23089,0,3,721.3693,374.3735,280.9952,0,0,0,''),
-(23089,0,4,736.7919,352.5067,296.4388,0,0,0,''),
-(23089,0,5,745.5639,336.7462,306.2994,0,0,0,''),
-(23089,0,6,749.1409,319.2256,311.6859,0,0,0,''),
-(23089,0,7,755.7801,304.4006,312.1697,6.27,0,0,'escort paused - SAY_AKAMA_OPEN_DOOR_1'),
-(23089,0,8,788.4127,296.7718,319.7609,0,0,0,''),
-(23089,0,9,798.0642,282.9705,324.8198,0,0,0,''),
-(23089,0,10,795.3637,264.1908,340.1823,0,0,0,''),
-(23089,0,11,772.6248,242.5376,349.0187,0,0,0,''),
-(23089,0,12,748.4362,235.8051,353.0343,0,0,0,'escort paused - GOSSIP_ITEM_START_EVENT'),
-(23089,0,13,748.87,304.93,352.99,0,0,0,'escort paused - SAY_ILLIDAN_SPEECH_1'),
-(23089,0,14,737.92,368.15,352.99,0,0,0,''),
-(23089,0,15,749.64,378.69,352.99,0,0,0,''),
-(23089,0,16,766.49,371.79,353.63,0,0,0,''),
-(23089,0,17,784.98,361.89,341.41,0,0,0,''),
-(23089,0,18,791.44,347.1,341.41,0,0,0,''),
-(23089,0,19,794.8,319.47,319.75,0,0,0,''),
-(23089,0,20,794.34,304.34,319.75,0,0,0,'escort paused - fight illidari elites'),
-(23089,0,21,794.8,319.47,319.75,0,0,0,''),
-(23089,0,22,791.44,347.1,341.41,0,0,0,''),
-(23089,0,23,784.98,361.89,341.41,0,0,0,''),
-(23089,0,24,766.49,371.79,353.63,0,0,0,''),
-(23089,0,25,749.64,378.69,352.99,0,0,0,''),
-(23089,0,26,737.92,368.15,352.99,0,0,0,'escort paused'),
 (23340,0,0,-5100.367,646.988,86.75992,0,0,0,''),
 (23340,0,1,-5098.652,661.8313,87.08841,0,0,0,''),
 (23340,0,2,-5092.219,664.3353,87.73563,0,0,0,''),
@@ -8714,7 +8702,7 @@ INSERT INTO script_waypoint VALUES
 (23999,0,0,297.9303,1465.843,81.57809,100,7000,0,''),
 (23999,0,1,302.2797,1462.846,81.57086,100,0,0,''),
 (23999,0,2,306.3771,1463.949,81.58128,100,6000,0,''),
-(23999,0,3,304.3857,1465.72,81.58634,100,6000,0,''),
+(23999,0,3,304.3857, 1465.72, 81.58634, 0.9948376,6000,0,''),
 (23999,0,4,298.7304,1464.985,81.57541,100,60000,0,''),
 -- guessed
 (23999,0,5,305.810455,1456.020264,81.506264,100,0,0,''),

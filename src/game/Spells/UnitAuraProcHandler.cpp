@@ -254,9 +254,9 @@ pAuraProcHandler AuraProcHandler[TOTAL_AURAS] =
     &Unit::HandleNULLProc,                                  //220 SPELL_AURA_MOD_RATING_FROM_STAT
     &Unit::HandleNULLProc,                                  //221 ignored
     &Unit::HandleNULLProc,                                  //222 unused
-    &Unit::HandleNULLProc,                                  //223 Cold Stare
+    &Unit::HandleRaidProcFromChargeAuraProc,                //223 Cold Stare
     &Unit::HandleNULLProc,                                  //224 unused
-    &Unit::HandleMendingAuraProc,                           //225 SPELL_AURA_PRAYER_OF_MENDING
+    &Unit::HandleRaidProcFromChargeWithValueAuraProc,                           //225 SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE
     &Unit::HandleNULLProc,                                  //226 SPELL_AURA_PERIODIC_DUMMY
     &Unit::HandleNULLProc,                                  //227 SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE
     &Unit::HandleNULLProc,                                  //228 SPELL_AURA_DETECT_STEALTH
@@ -427,31 +427,41 @@ void Unit::ProcSkillsAndReactives(bool isVictim, Unit* target, uint32 procFlags,
 
 void Unit::ProcDamageAndSpell(ProcSystemArguments&& data)
 {
-    m_spellProcsHappening = true;
-    data.attacker = this;
     // First lets get skills and reactives out of the way
-    if (data.procFlagsAttacker)
-        ProcSkillsAndReactives(false, data.victim, data.procFlagsAttacker, data.procExtra, data.attType);
+    if (data.attacker)
+    {
+        data.attacker->m_spellProcsHappening = true;
+        if (data.procFlagsAttacker)
+            data.attacker->ProcSkillsAndReactives(false, data.victim, data.procFlagsAttacker, data.procExtra, data.attType);
+    }
     bool canProcVictim = data.victim && data.victim->isAlive() && data.procFlagsVictim;
     if (canProcVictim)
-        data.victim->ProcSkillsAndReactives(true, this, data.procFlagsVictim, data.procExtra, data.attType);
+        data.victim->ProcSkillsAndReactives(true, data.attacker, data.procFlagsVictim, data.procExtra, data.attType);
 
     // Not much to do if no flags are set.
-    if (data.procFlagsAttacker)
-        ProcDamageAndSpellFor(data, false);
+    if (data.attacker && data.procFlagsAttacker)
+        data.attacker->ProcDamageAndSpellFor(data, false);
 
     // Now go on with a victim's events'n'auras
     // Not much to do if no flags are set or there is no victim
     if (canProcVictim)
         data.victim->ProcDamageAndSpellFor(data, true);
-    m_spellProcsHappening = false;
 
-    // Mark auras created during proccing as ready
-    for (SpellAuraHolder* holder : m_delayedSpellAuraHolders)
-        if (holder->GetState() == SPELLAURAHOLDER_STATE_CREATED) // if deleted by some unknown circumstance
-            holder->SetState(SPELLAURAHOLDER_STATE_READY);
+    if (data.attacker)
+    {
+		// trigger weapon enchants for weapon based spells; exclude spells that stop attack, because may break CC
+		if (data.attacker->GetTypeId() == TYPEID_PLAYER && (data.procExtra & (PROC_EX_NORMAL_HIT | PROC_EX_CRITICAL_HIT)) != 0)
+			if (!data.procSpell || (data.procSpell->EquippedItemClass == ITEM_CLASS_WEAPON && !data.procSpell->HasAttribute(SPELL_ATTR_STOP_ATTACK_TARGET)))
+				static_cast<Player*>(data.attacker)->CastItemCombatSpell(data.victim, data.attType, data.procSpell ? !IsNextMeleeSwingSpell(data.procSpell) : false);
+        data.attacker->m_spellProcsHappening = false;
 
-    m_delayedSpellAuraHolders.clear();
+        // Mark auras created during proccing as ready
+        for (SpellAuraHolder* holder : data.attacker->m_delayedSpellAuraHolders)
+            if (holder->GetState() == SPELLAURAHOLDER_STATE_CREATED) // if deleted by some unknown circumstance
+                holder->SetState(SPELLAURAHOLDER_STATE_READY);
+
+        data.attacker->m_delayedSpellAuraHolders.clear();
+    }
 }
 
 ProcExecutionData::ProcExecutionData(ProcSystemArguments& data, bool isVictim) :
@@ -1762,7 +1772,6 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(ProcExecutionData& data)
                 // Windfury Weapon (Passive) 1-5 Ranks
                 case 33757:
                 {
-                    // TODO: unify handling of all enchantments - some are in procs some are in Player::CastItemCombatSpell
                     if (GetTypeId() != TYPEID_PLAYER)
                         return SPELL_AURA_PROC_FAILED;
 
@@ -1799,7 +1808,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(ProcExecutionData& data)
                         return SPELL_AURA_PROC_FAILED;
                     }
 
-                    int32 extra_attack_power = CalculateSpellDamage(pVictim, windfurySpellEntry, EFFECT_INDEX_0);
+                    int32 extra_attack_power = CalculateSpellEffectValue(pVictim, windfurySpellEntry, EFFECT_INDEX_0);
 
                     if (Aura* aura = GetAura(34244, EFFECT_INDEX_0)) // Increased Windfury Weapon
                     {
@@ -2675,12 +2684,13 @@ SpellAuraProcResult Unit::HandleProcTriggerDamageAuraProc(ProcExecutionData& dat
     SpellEntry const* spellInfo = triggeredByAura->GetSpellProto();
     DEBUG_FILTER_LOG(LOG_FILTER_SPELL_CAST, "ProcDamageAndSpell: doing %u damage from spell id %u (triggered by auratype %u of spell %u)",
                      triggeredByAura->GetModifier()->m_amount, spellInfo->Id, triggeredByAura->GetModifier()->m_auraname, triggeredByAura->GetId());
-    SpellNonMeleeDamage damageInfo(this, pVictim, spellInfo->Id, SpellSchoolMask(spellInfo->SchoolMask));
-    CalculateSpellDamage(&damageInfo, triggeredByAura->GetModifier()->m_amount, spellInfo);
-    damageInfo.target->CalculateAbsorbResistBlock(this, &damageInfo, spellInfo);
-    DealDamageMods(damageInfo.target, damageInfo.damage, &damageInfo.absorb, SPELL_DIRECT_DAMAGE, spellInfo);
-    SendSpellNonMeleeDamageLog(&damageInfo);
-    DealSpellDamage(&damageInfo, true);
+
+    SpellNonMeleeDamage spellDamageInfo(this, pVictim, spellInfo->Id, SpellSchoolMask(spellInfo->SchoolMask));
+    CalculateSpellDamage(&spellDamageInfo, triggeredByAura->GetModifier()->m_amount, spellInfo);
+    spellDamageInfo.target->CalculateAbsorbResistBlock(this, &spellDamageInfo, spellInfo);
+    Unit::DealDamageMods(this, spellDamageInfo.target, spellDamageInfo.damage, &spellDamageInfo.absorb, SPELL_DIRECT_DAMAGE);
+    SendSpellNonMeleeDamageLog(&spellDamageInfo);
+    DealSpellDamage(&spellDamageInfo, true);
     return SPELL_AURA_PROC_OK;
 }
 
@@ -2792,7 +2802,74 @@ SpellAuraProcResult Unit::HandleOverrideClassScriptAuraProc(ProcExecutionData& d
     return SPELL_AURA_PROC_OK;
 }
 
-SpellAuraProcResult Unit::HandleMendingAuraProc(ProcExecutionData& data)
+SpellAuraProcResult Unit::HandleRaidProcFromChargeAuraProc(ProcExecutionData& data)
+{
+    uint32 damage = data.damage; Aura* triggeredByAura = data.triggeredByAura;
+    //if no damage then mending proc has failed, we dont need to do unecessary steps
+    if (!damage)
+        return SPELL_AURA_PROC_FAILED;
+
+    // aura can be deleted at casts
+    SpellEntry const* spellProto = triggeredByAura->GetSpellProto();
+    SpellEffectIndex effIdx = triggeredByAura->GetEffIndex();
+    ObjectGuid caster_guid = triggeredByAura->GetCasterGuid();
+
+    // triggered spell - only one in TBC
+    uint32 triggeredSpellId = 43594;
+    uint32 animationSpellId = 43613;
+
+    if (data.procSpell->Id == triggeredSpellId)
+        return SPELL_AURA_PROC_FAILED;
+
+    int32 jumps = triggeredByAura->GetHolder()->GetAuraCharges() - 1; // jumps
+    triggeredByAura->GetHolder()->SetAuraCharges(1); // current aura expire - will be removed at next charges decrease
+
+    // next target selection
+    if (jumps > 0 && GetTypeId() == TYPEID_PLAYER && caster_guid.IsPlayer())
+    {
+        float radius;
+        if (spellProto->EffectRadiusIndex[effIdx])
+            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellProto->EffectRadiusIndex[effIdx]));
+        else
+            radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellProto->rangeIndex));
+
+        if (Unit* caster = triggeredByAura->GetCaster())
+        {
+            if (Player* target = GetNextRandomRaidMember(radius, SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE))
+            {
+                // This custom nonsense was kept throughout wotlk
+                SpellAuraHolder* holder = GetSpellAuraHolder(spellProto->Id, caster->GetObjectGuid());
+                SpellAuraHolder* new_holder = CreateSpellAuraHolder(spellProto, target, caster);
+
+                for (int32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+                {
+                    Aura* aur = holder->GetAuraByEffectIndex(SpellEffectIndex(i));
+                    if (!aur)
+                        continue;
+
+                    int32 basePoints = aur->GetBasePoints();
+                    int32 damage = aur->GetModifier()->m_baseAmount;
+                    Aura* new_aur = CreateAura(spellProto, aur->GetEffIndex(), &damage, &basePoints, new_holder, target, caster);
+                    new_holder->AddAura(new_aur, new_aur->GetEffIndex());
+                }
+                new_holder->SetAuraCharges(jumps, false);
+
+                // lock aura holder (currently SPELL_AURA_RAID_PROC_FROM_CHARGE is single target spell, so will attempt removing from old target
+                // when applied to new one)
+                if (!target->AddSpellAuraHolder(new_holder))
+                    delete new_holder;
+                else
+                    new_holder->SetState(SPELLAURAHOLDER_STATE_READY);
+                CastSpell(target, animationSpellId, TRIGGERED_NONE);
+            }
+        }
+    }
+
+    CastSpell(nullptr, triggeredSpellId, TRIGGERED_NONE);
+    return SPELL_AURA_PROC_OK;
+}
+
+SpellAuraProcResult Unit::HandleRaidProcFromChargeWithValueAuraProc(ProcExecutionData& data)
 {
     uint32 damage = data.damage; Aura* triggeredByAura = data.triggeredByAura;
     //if no damage then mending proc has failed, we dont need to do unecessary steps
@@ -2820,12 +2897,13 @@ SpellAuraProcResult Unit::HandleMendingAuraProc(ProcExecutionData& data)
         else
             radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(spellProto->rangeIndex));
 
-        if (Player* caster = ((Player*)triggeredByAura->GetCaster()))
+        if (Player* caster = static_cast<Player*>(triggeredByAura->GetCaster()))
         {
             caster->ApplySpellMod(spellProto->Id, SPELLMOD_RADIUS, radius, nullptr);
 
-            if (Player* target = ((Player*)this)->GetNextRaidMemberWithLowestLifePercentage(radius, SPELL_AURA_PRAYER_OF_MENDING))
+            if (Player* target = static_cast<Player*>(this)->GetNextRaidMemberWithLowestLifePercentage(radius, SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE))
             {
+                // This custom nonsense was later removed in 3.0.2 for this proc effect only and replaced by casting the original spell
                 SpellAuraHolder* holder = GetSpellAuraHolder(spellProto->Id, caster->GetObjectGuid());
                 SpellAuraHolder* new_holder = CreateSpellAuraHolder(spellProto, target, caster);
 
@@ -2842,19 +2920,19 @@ SpellAuraProcResult Unit::HandleMendingAuraProc(ProcExecutionData& data)
                 }
                 new_holder->SetAuraCharges(jumps, false);
 
-                // lock aura holder (currently SPELL_AURA_PRAYER_OF_MENDING is single target spell, so will attempt removing from old target
+                // lock aura holder (currently SPELL_AURA_RAID_PROC_FROM_CHARGE_WITH_VALUE is single target spell, so will attempt removing from old target
                 // when applied to new one)
                 if (!target->AddSpellAuraHolder(new_holder))
                     delete new_holder;
                 else
                     new_holder->SetState(SPELLAURAHOLDER_STATE_READY);
-                CastSpell(target, 41637, TRIGGERED_OLD_TRIGGERED);
+                CastSpell(target, 41637, TRIGGERED_NONE);
             }
         }
     }
 
     // heal
-    CastCustomSpell(this, 33110, &heal, nullptr, nullptr, TRIGGERED_OLD_TRIGGERED);
+    CastCustomSpell(nullptr, 33110, &heal, nullptr, nullptr, TRIGGERED_NONE);
     return SPELL_AURA_PROC_OK;
 }
 

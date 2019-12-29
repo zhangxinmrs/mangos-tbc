@@ -511,7 +511,7 @@ void CreatureLinkingHolder::ProcessSlaveGuidList(CreatureLinkingEvent eventType,
         if (!pSlave)
         {
             // Remove old guid first
-            slaveGuidList.erase(slave_itr++);
+            slave_itr = slaveGuidList.erase(slave_itr);
             continue;
         }
 
@@ -556,7 +556,7 @@ void CreatureLinkingHolder::ProcessSlave(CreatureLinkingEvent eventType, Creatur
             break;
         case LINKING_EVENT_DIE:
             if (flag & FLAG_SELFKILL_ON_DEATH && pSlave->isAlive())
-                pSlave->DealDamage(pSlave, pSlave->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                pSlave->Suicide();
             if (flag & FLAG_DESPAWN_ON_DEATH && pSlave->isAlive())
                 pSlave->ForcedDespawn();
             if (flag & FLAG_RESPAWN_ON_DEATH && !pSlave->isAlive())

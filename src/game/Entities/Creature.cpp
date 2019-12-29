@@ -196,7 +196,7 @@ void Creature::AddToWorld()
 
     // Check if visibility distance different
     if (GetCreatureInfo()->visibilityDistanceType != VisibilityDistanceType::Normal)
-        SetVisibilityDistanceOverride(GetCreatureInfo()->visibilityDistanceType);
+        GetVisibilityData().SetVisibilityDistanceOverride(GetCreatureInfo()->visibilityDistanceType);
 
     if (m_countSpawns)
         GetMap()->AddToSpawnCount(GetObjectGuid());
@@ -667,6 +667,10 @@ void Creature::Update(const uint32 diff)
                 if (AI())
                     AI()->JustRespawned();
 
+                // Inform Instance Data
+                if (InstanceData* mapInstance = GetInstanceData())
+                    mapInstance->OnCreatureRespawn(this);
+
                 if (m_isCreatureLinkingTrigger)
                     GetMap()->GetCreatureLinkingHolder()->DoCreatureLinkingEvent(LINKING_EVENT_RESPAWN, this);
 
@@ -827,6 +831,9 @@ bool Creature::AIM_Initialize()
 
     // Handle Spawned Events, also calls Reset()
     m_ai->JustRespawned();
+
+    if (InstanceData* mapInstance = GetInstanceData())
+        mapInstance->OnCreatureRespawn(this);
     return true;
 }
 
@@ -841,16 +848,6 @@ bool Creature::Create(uint32 guidlow, CreatureCreatePos& cPos, CreatureInfo cons
 
     if (!cPos.Relocate(this))
         return false;
-
-    // Notify the outdoor pvp script
-    if (OutdoorPvP* outdoorPvP = sOutdoorPvPMgr.GetScript(GetZoneId()))
-        outdoorPvP->HandleCreatureCreate(this);
-
-    // Notify the map's instance data.
-    // Only works if you create the object in it, not if it is moves to that map.
-    // Normally non-players do not teleport to other maps.
-    if (InstanceData* iData = GetMap()->GetInstanceData())
-        iData->OnCreatureCreate(this);
 
     if (sObjectMgr.IsEncounter(GetEntry(), GetMapId()))
     {
@@ -878,6 +875,16 @@ bool Creature::Create(uint32 guidlow, CreatureCreatePos& cPos, CreatureInfo cons
                 break;
         }
     }
+
+    // Notify the outdoor pvp script
+    if (OutdoorPvP * outdoorPvP = sOutdoorPvPMgr.GetScript(GetZoneId()))
+        outdoorPvP->HandleCreatureCreate(this);
+
+    // Notify the map's instance data.
+    // Only works if you create the object in it, not if it is moves to that map.
+    // Normally non-players do not teleport to other maps.
+    if (InstanceData * iData = GetMap()->GetInstanceData())
+        iData->OnCreatureCreate(this);
 
     // Add to CreatureLinkingHolder if needed
     if (sCreatureLinkingMgr.GetLinkedTriggerInformation(this))
@@ -2202,6 +2209,9 @@ bool Creature::MeetsSelectAttackingRequirement(Unit* pTarget, SpellEntry const* 
             return false;
 
         if ((selectFlags & SELECT_FLAG_SKIP_TANK) && pTarget == getVictim())
+            return false;
+
+        if ((selectFlags & SELECT_FLAG_SKIP_CUSTOM) && pTarget->GetObjectGuid() == params.skip.guid)
             return false;
     }
 

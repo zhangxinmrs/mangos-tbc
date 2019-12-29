@@ -363,13 +363,24 @@ void ScriptedAI::SetEquipmentSlots(bool loadDefault, int32 mainHand, int32 offHa
     }
 
     if (mainHand >= 0)
+    { 
         m_creature->SetVirtualItem(VIRTUAL_ITEM_SLOT_0, mainHand);
+        m_creature->UpdateDamagePhysical(BASE_ATTACK);            
+    }
 
     if (offHand >= 0)
+    { 
         m_creature->SetVirtualItem(VIRTUAL_ITEM_SLOT_1, offHand);
-
+        if(offHand == 1)
+            m_creature->SetCanDualWield(true);
+        else
+            m_creature->SetCanDualWield(false);
+    }
     if (ranged >= 0)
+    {
         m_creature->SetVirtualItem(VIRTUAL_ITEM_SLOT_2, ranged);
+        m_creature->UpdateDamagePhysical(RANGED_ATTACK);
+    }
 }
 
 // Hacklike storage used for misc creatures that are expected to evade of outside of a certain area.
@@ -378,7 +389,6 @@ enum
 {
     NPC_BROODLORD               = 12017,
     NPC_VOID_REAVER             = 19516,
-    NPC_JAN_ALAI                = 23578,
     NPC_TALON_KING_IKISS        = 18473,
     NPC_KARGATH_BLADEFIST       = 16808,
     NPC_NETHERMANCER_SEPETHREA  = 19221,
@@ -393,6 +403,13 @@ enum
     // Black Temple
     NPC_HIGH_WARLORD_NAJENTUS   = 22887,
     NPC_GURTOGG_BLOODBOIL       = 22948,
+
+    // Zul'Aman
+    NPC_AKILZON                 = 23574,
+    NPC_NALORAKK                = 23576,
+    NPC_JANALAI                 = 23578,
+    NPC_HALAZZI                 = 23577,
+    NPC_MALACRASS               = 24239,
 };
 
 bool ScriptedAI::EnterEvadeIfOutOfCombatArea(const uint32 diff)
@@ -420,10 +437,6 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(const uint32 diff)
             break;
         case NPC_VOID_REAVER:                               // void reaver (calculate from center of room)
             if (m_creature->GetDistance2d(432.59f, 371.93f) < 105.0f)
-                return false;
-            break;
-        case NPC_JAN_ALAI:                                  // jan'alai (calculate by Z)
-            if (z > 12.0f)
                 return false;
             break;
         case NPC_TALON_KING_IKISS:
@@ -472,6 +485,26 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(const uint32 diff)
             break;
         case NPC_GURTOGG_BLOODBOIL:
             if (y > 140.f)
+                return false;
+            break;
+        case NPC_AKILZON:
+            if (x > 336.259f)
+                return false;
+            break;
+        case NPC_NALORAKK:
+            if (y < 1378.009f)
+                return false;
+            break;
+        case NPC_JANALAI:
+            if (x < -8.f && x > -57.f)
+                return false;
+            break;
+        case NPC_HALAZZI:
+            if (x > 307.f && y > 1036.f)
+                return false;
+            break;
+        case NPC_MALACRASS:
+            if (y < 1025.f)
                 return false;
             break;
         default:

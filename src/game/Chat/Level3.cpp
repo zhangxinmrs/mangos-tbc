@@ -3558,11 +3558,11 @@ bool ChatHandler::HandleGetDistanceCommand(char* args)
 
     Unit* target = dynamic_cast<Unit*>(obj);
     PSendSysMessage("P -> T Attack distance: %.2f", player->GetAttackDistance(target));
-    PSendSysMessage("P -> T Visible distance: %.2f", player->GetVisibleDistance(target));
-    PSendSysMessage("P -> T Visible distance (Alert): %.2f", player->GetVisibleDistance(target, true));
+    PSendSysMessage("P -> T Visible distance: %.2f", player->GetVisibilityData().GetStealthVisibilityDistance(target));
+    PSendSysMessage("P -> T Visible distance (Alert): %.2f", player->GetVisibilityData().GetStealthVisibilityDistance(target, true));
     PSendSysMessage("T -> P Attack distance: %.2f", target->GetAttackDistance(player));
-    PSendSysMessage("T -> P Visible distance: %.2f", target->GetVisibleDistance(player));
-    PSendSysMessage("T -> P Visible distance (Alert): %.2f", target->GetVisibleDistance(player, true));
+    PSendSysMessage("T -> P Visible distance: %.2f", target->GetVisibilityData().GetStealthVisibilityDistance(player));
+    PSendSysMessage("T -> P Visible distance (Alert): %.2f", target->GetVisibilityData().GetStealthVisibilityDistance(player, true));
 
     return true;
 }
@@ -3579,8 +3579,8 @@ bool ChatHandler::HandleGetLosCommand(char* /*args*/)
 
     float x, y, z;
     target->GetPosition(x, y, z);
-    bool normalLos = player->IsWithinLOS(x, y, z, false);
-    bool m2Los = player->IsWithinLOS(x, y, z, true);
+    bool normalLos = player->IsWithinLOS(x, y, z + player->GetCollisionHeight(), false);
+    bool m2Los = player->IsWithinLOS(x, y, z + player->GetCollisionHeight(), true);
     PSendSysMessage("Los check: Normal: %s M2: %s", normalLos ? "true" : "false", m2Los ? "true" : "false");
     return true;
 }
@@ -3612,15 +3612,15 @@ bool ChatHandler::HandleDieCommand(char* args)
             DamageEffectType damageType = DIRECT_DAMAGE;
             uint32 absorb = 0;
             uint32 damage = target->GetHealth();
-            player->DealDamageMods(target, damage, &absorb, damageType);
-            player->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+            Unit::DealDamageMods(player, target, damage, &absorb, damageType);
+            Unit::DealDamage(player, target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         }
     }
     else
     {
         if (target->isAlive())
         {
-            player->DealDamage(target, target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+            Unit::DealDamage(player, target, target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         }
     }
 
@@ -3658,8 +3658,8 @@ bool ChatHandler::HandleDamageCommand(char* args)
     if (!*args)
     {
         uint32 absorb = 0;
-        player->DealDamageMods(target, damage, &absorb, DIRECT_DAMAGE);
-        player->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+        Unit::DealDamageMods(player, target, damage, &absorb, DIRECT_DAMAGE);
+        Unit::DealDamage(player, target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         if (target != player)
             player->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_NORMAL, 0);
         return true;
@@ -3694,8 +3694,8 @@ bool ChatHandler::HandleDamageCommand(char* args)
 
         damage -= malus;
 
-        player->DealDamageMods(target, damage, &absorb, DIRECT_DAMAGE);
-        player->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
+        Unit::DealDamageMods(player, target, damage, &absorb, DIRECT_DAMAGE);
+        Unit::DealDamage(player, target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
         player->SendAttackStateUpdate(HITINFO_NORMALSWING2, target, schoolmask, damage, absorb, resist, VICTIMSTATE_NORMAL, 0);
         return true;
     }
@@ -5712,7 +5712,7 @@ bool ChatHandler::HandleRespawnCommand(char* /*args*/)
 
     MaNGOS::RespawnDo u_do;
     MaNGOS::WorldObjectWorker<MaNGOS::RespawnDo> worker(u_do);
-    Cell::VisitGridObjects(pl, worker, pl->GetMap()->GetVisibilityDistance());
+    Cell::VisitGridObjects(pl, worker, pl->GetVisibilityData().GetVisibilityDistance());
     return true;
 }
 
